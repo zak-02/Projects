@@ -27,7 +27,7 @@ class Planet(turtle.Turtle):
 
         self.goto(sun.xcor()+x,sun.ycor()+y)
 
-# making plantes
+# making planets
 mercury = Planet("Mercury",40, 'grey')
 venus = Planet("Venus",80, 'orange')
 earth=Planet("Earth",100,'blue')
@@ -38,7 +38,7 @@ uranus=Planet("Uranus",250, 'light blue')
 neptune=Planet("Neptune",280, 'black')
 
 #adding planets to a list
-myList = [ mercury, venus,earth, mars,jupiter,saturn,uranus,neptune]
+myList = [ mercury, venus, earth, mars, jupiter, saturn, uranus, neptune]
 
 
 while True:#while statement
