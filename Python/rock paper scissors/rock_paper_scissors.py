@@ -1,26 +1,26 @@
 import random
 import tkinter as tk
 from tkinter import *
-from PIL import Image,ImageTk
 import os
 
 # Change working directory to the script's directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def Roll1():
-    input('Player 1, press the enter key to roll for either rock, paper or scissors: ')
+    input('Player 1, press the enter key to roll for either rock, paper, or scissors: ')
 
 def Roll2():
-    input('Player 2, press the enter key to roll for either rock, paper or scissors: ')
+    input('Player 2, press the enter key to roll for either rock, paper, or scissors: ')
 
 def GUI():
     window = tk.Tk()  # Initialize the main Tk window
-    canvas= tk.Canvas(window, width= 750, height= 540)
+    canvas = tk.Canvas(window, bg='light slate blue',width=1920, height=1080)
     canvas.pack()
-    photo = tk.PhotoImage(file='rock.png')
-    canvas.create_image(150,250,anchor=NW,image=photo)
-    canvas.create_text(300, 50, text='Rock Paper Scissors game', fill="black", font=('Helvetica 15 bold'))
-
+    photo = tk.PhotoImage(file='question.png')
+    canvas.create_image(730, 125, anchor=NW, image=photo)
+    canvas.create_text(850, 50, text='Rock Paper Scissors game', fill="black", font=('Helvetica 15 bold'))
+    canvas.create_text(400,300, text = "Player 1's turn", fill = 'black', font='Helvetica 15 bold')
+    
 
     window.mainloop()
 
@@ -35,17 +35,10 @@ def rps():
     print('Player 1 chose', game[Choice1])
     print('Player 2 chose', game[Choice2])
 
-    if (Choice1 == game[1] and Choice2 == game[3]):
-        print('Player 1 wins!')
-    elif (Choice1 == game[3] and Choice2 == game[1]):
-        print('Player 2 wins!')
-    elif (Choice1 == game[2] and Choice2 == game[3]):
-        print('Player 1 wins!')
-    elif (Choice1 == game[3] and Choice2 == game[2]):
-        print('Player 2 wins!')
-    elif (Choice1 == Choice2):
+    # Determine the winner
+    if Choice1 == Choice2:
         print("It's a draw!")
-    elif (Choice1 > Choice2):
+    elif (Choice1 == 1 and Choice2 == 3) or (Choice1 == 2 and Choice2 == 1) or (Choice1 == 3 and Choice2 == 2):
         print('Player 1 wins!')
     else:
         print('Player 2 wins!')
