@@ -18,11 +18,10 @@ def GUI():
     canvas= tk.Canvas(window, width= 750, height= 540)
     canvas.pack()
     photo = tk.PhotoImage(file='rock.png')
-    canvas.create_image(150,250,anchor=NW,image=photo,width=150, height=200)
+    canvas.create_image(150,250,anchor=NW,image=photo)
     canvas.create_text(300, 50, text='Rock Paper Scissors game', fill="black", font=('Helvetica 15 bold'))
 
-    
-    
+
     window.mainloop()
 
 def rps():
