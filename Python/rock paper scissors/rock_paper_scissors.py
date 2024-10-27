@@ -1,6 +1,5 @@
 import random
 import tkinter as tk
-from tkinter import *
 import os
 
 # Change working directory to the script's directory
@@ -14,18 +13,26 @@ def Roll2():
 
 def GUI():
     window = tk.Tk()  # Initialize the main Tk window
-    canvas = tk.Canvas(window, bg='light slate blue',width=1920, height=1080)
+    canvas = tk.Canvas(window, bg='light slate blue', width=1920, height=1080)
     canvas.pack()
-    photo = tk.PhotoImage(file='question.png')
-    canvas.create_image(730, 125, anchor=NW, image=photo)
-    canvas.create_text(850, 50, text='Rock Paper Scissors game', fill="black", font=('Helvetica 15 bold'))
-    canvas.create_text(400,300, text = "Player 1's turn", fill = 'black', font='Helvetica 15 bold')
-    
+
+    # Create an image placeholder
+    window.photo = tk.PhotoImage(file='question.png')  # Keep a reference to the image
+    canvas.create_image(900, 325, anchor=tk.CENTER, image=window.photo)
+
+    # Add main game title
+    canvas.create_text(850, 50, text='Rock Paper Scissors game', fill="black", font='Helvetica 50 bold')
+
+    # Add Player 1's turn text
+    canvas.create_text(900, 600, text="Player 1's turn", fill='black', font='Helvetica 35 bold')
+
+    # Create a 'Generate' button
+    generate_button = tk.Button(window, text='Generate', font='Helvetica 20', command=rps)
+    canvas.create_window(900, 700, window=generate_button)
 
     window.mainloop()
 
 def rps():
-    GUI()
     game = {1: 'rock', 2: 'paper', 3: 'scissors'}
     Roll1()
     Choice1 = random.randint(1, 3)
@@ -43,4 +50,5 @@ def rps():
     else:
         print('Player 2 wins!')
 
-rps()
+
+GUI()
