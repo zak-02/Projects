@@ -1,0 +1,128 @@
+import speech_recognition as sr
+import cv2
+import mediapipe as mp
+from textblob import TextBlob
+import openai
+import os
+
+# OpenAI API Key
+openai.api_key = os.getenv('OPENAI_API_KEY')
+
+# Speech-to-Text using Google Speech Recognition
+recognizer = sr.Recognizer()
+
+def transcribe_audio(audio_file):
+    with sr.AudioFile(audio_file) as source:
+        audio = recognizer.record(source)
+    return recognizer.recognize_google(audio)
+
+# Sentiment Analysis using TextBlob
+def analyze_sentiment(text):
+    blob = TextBlob(text)
+    sentiment_score = blob.sentiment.polarity
+    sentiment = 'Positive' if sentiment_score > 0 else 'Negative' if sentiment_score < 0 else 'Neutral'
+    return sentiment, sentiment_score
+
+# Facial Expression Detection using Mediapipe (simplified)
+mp_face_detection = mp.solutions.face_detection
+mp_drawing = mp.solutions.drawing_utils
+
+def detect_facial_expressions(video_file, timestamps):
+    cap = cv2.VideoCapture(video_file)
+    expressions = []
+    with mp_face_detection.FaceDetection(min_detection_confidence=0.2) as face_detection:
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+            timestamp = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000  # timestamp in seconds
+            if any(abs(timestamp - t) < 1 for t in timestamps):  # Approximate match
+                rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                results = face_detection.process(rgb_frame)
+                if results.detections:
+                    expressions.append((timestamp, "Facial expression detected"))
+    cap.release()
+    return expressions
+
+# Speech-to-Text for extracting statements and timestamps
+def extract_statements_and_timestamps(audio_file):
+    transcribed_text = transcribe_audio(audio_file)
+    statements = transcribed_text.split('. ')
+    timestamps = [round(i * 30, 2) for i in range(len(statements))]  # Assume 5 sec per sentence for simplicity
+    return statements, timestamps
+
+# Speaker Identification (For simplicity, assume manual association with timestamps)
+def identify_speaker_and_time(timestamp):
+    return "Kamala Harris" if int(timestamp) % 2 == 0 else "Donald Trump"
+
+# Generate Report with ChatGPT
+def generate_report_with_chatgpt(statements, timestamps, sentiment_data, expressions):
+    # Prepare the data to send to the API
+    data = ""
+    for i, statement in enumerate(statements):
+        sentiment, sentiment_score = sentiment_data[i]
+        speaker = identify_speaker_and_time(timestamps[i])
+        triggered_expression = "No expression detected"
+        expression_timestamp = None
+        reacting_candidate = "Kamala Harris" if speaker == "Donald Trump" else "Donald Trump"
+
+        # Find matching expression for the other candidate at the time of the statement
+        for expr in expressions:
+            if abs(expr[0] - timestamps[i]) < 1:  # Approximate match
+                triggered_expression = expr[1]
+                expression_timestamp = expr[0]
+                break
+        
+        # Format each statement's data with timestamps and reactions 
+        data += f"""
+Statement: "{statement}"  
+Time of Statement: {timestamps[i]} seconds  
+Speaker: {speaker}  
+Sentiment Score: {sentiment} ({sentiment_score:.2f})  
+Reaction from {reacting_candidate}: {triggered_expression}  
+Reaction Time: {expression_timestamp if expression_timestamp else 'N/A'} seconds  
+
+"""
+
+    # Prepare the prompt for ChatGPT
+    prompt = f"""
+    You are a professional debate analyst. Using the following data about a presidential debate, generate a detailed report highlighting key moments, speaker dynamics, facial expressions, and sentiments:
+
+    {data}
+
+    Write the report in a structured, formal manner. Include a conclusion summarizing the debate's overall dynamics and its impact on the audience.
+    """
+
+    # Call OpenAI API to generate the report
+    response = openai.ChatCompletion.create(
+        model="gpt-4o-mini",  # Use a valid model name (replace with "gpt-4" or other available model)
+        messages=[{
+            "role": "system", "content": "You are a professional debate analyst."
+        }, {
+            "role": "user", "content": prompt
+        }],
+        max_tokens=1500,
+        temperature=0.7,
+    )
+
+    # Return the generated report
+    return response.choices[0].message['content']
+
+# Example of how to call the functions with real data
+audio_file = 'C:/Users/zakam/Desktop/11-59/emotion detection/debate_audio.wav'  # Your audio file
+video_file = 'C:/Users/zakam/Desktop/11-59/emotion detection/debate_video.mp4'  # Your video file
+
+# Step 1: Extract statements and timestamps from audio
+statements, timestamps = extract_statements_and_timestamps(audio_file)
+
+# Step 2: Analyze sentiment for each statement
+sentiment_data = [analyze_sentiment(statement) for statement in statements]
+
+# Step 3: Detect facial expressions during the debate based on timestamps
+expressions = detect_facial_expressions(video_file, timestamps)
+
+# Step 4: Generate the final report using ChatGPT
+report = generate_report_with_chatgpt(statements, timestamps, sentiment_data, expressions)
+
+# Output the generated report
+print(report)

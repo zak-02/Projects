@@ -1,0 +1,66 @@
+import openai
+import os
+import tkinter as tk
+from tkinter import filedialog
+
+# Retrieve your API key from the environment variable
+openai.api_key = os.getenv('OPENAI_API_KEY')
+
+# Function to generate a response using chat completion model
+def generate_chat_completion(prompt):
+    response = openai.ChatCompletion.create(
+        model="gpt-4o-mini",  # Specify the correct model
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=1000  # Adjust token limit as needed
+    )
+    return response['choices'][0]['message']['content'].strip()
+
+# Function to review contract
+def review_contract(contract_text, focus_area="key points"):
+    prompt = f"Please review the following contract and provide a summary of the {focus_area}:\n\n{contract_text}"
+    response = generate_chat_completion(prompt)
+    return response
+
+# Function to open file dialog and choose a file
+def choose_file():
+    root = tk.Tk()
+    root.withdraw()  # Hides the main tkinter window
+    file_path = filedialog.askopenfilename(title="Select contract file", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    return file_path
+
+# Function to read the file with proper encoding handling
+def read_file(file_path):
+    try:
+        # Try reading with UTF-8 encoding first
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except UnicodeDecodeError:
+        # If there's an error, fall back to a different encoding
+        with open(file_path, 'r', encoding='ISO-8859-1') as file:
+            return file.read()
+
+
+# Main function to handle the process
+def main():
+    file_path = choose_file()
+    if file_path:
+        # Read the content of the file
+        contract_text = read_file(file_path)
+        print("Contract loaded successfully.")
+        
+        # Let the user choose the focus area (e.g., "termination clause")
+        focus_area = input("Enter the focus area for the summary (e.g., 'termination clause', 'key points'): ")
+        
+        # Review and summarize the contract
+        summary = review_contract(contract_text, focus_area)
+        print("\nSummary of the contract:")
+        print(summary)
+    else:
+        print("No file selected.")
+
+# Run the main function
+if __name__ == "__main__":
+    main()

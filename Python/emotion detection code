@@ -1,0 +1,148 @@
+import openai
+import os
+import tensorflow as tf
+import cv2
+import numpy as np
+import tkinter as tk
+from tkinter import filedialog
+
+# Retrieve your API key from the environment variable
+openai.api_key = os.getenv('OPENAI_API_KEY')
+
+# Define the correct path to your model file and video file
+model_path = 'C:/Users/zakam/Desktop/11-59/emotion detection/emotion_detection_model.h5'
+
+# Function to generate a response using chat completion model
+def generate_chat_completion(prompt):
+    response = openai.ChatCompletion.create(
+        model="gpt-4o-mini",  # Specify the correct model
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=1000  # Adjust token limit as needed
+    )
+    return response['choices'][0]['message']['content'].strip()
+
+# Emotion detection function
+def detect_emotions(video_path):
+    if not os.path.exists(model_path):
+        print("Model file not found at the specified path!")
+        return None
+
+    print("Model file found.")
+    # Load the emotion detection model without compiling it
+    emotion_model = tf.keras.models.load_model(model_path, compile=False)
+    print("Model loaded successfully.")
+    # Compile the model with a valid optimizer
+    emotion_model.compile(optimizer=tf.keras.optimizers.Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
+    print("Model compiled successfully.")
+
+    if not os.path.exists(video_path):
+        print("Video file not found at the specified path!")
+        return None
+
+    print("Video file found.")
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        print("Error: Could not open video.")
+        return None
+
+    print("Video opened successfully.")
+    # Load the face detector
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    print("Face cascade loaded.")
+
+    frame_count = 0
+    max_frames = 1800  # Process only the first minute assuming 30 fps
+
+    # Dictionary to keep track of emotion counts
+    emotion_counts = {'Angry': 0, 'Disgust': 0, 'Fear': 0, 'Happy': 0, 'Sad': 0, 'Surprise': 0, 'Neutral': 0}
+
+    # Dictionary to store the current emotion of each face
+    current_emotions = {}
+
+    while cap.isOpened() and frame_count < max_frames:
+        ret, frame = cap.read()
+        if not ret:
+            print("Failed to read frame")
+            break
+
+        frame_count += 1
+        print(f"Processing frame {frame_count}...")
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        print(f"Detected {len(faces)} faces in frame {frame_count}")
+
+        for (x, y, w, h) in faces:
+            face_roi = gray[y:y+h, x:x+w]
+            if face_roi.size == 0:
+                print(f"Empty ROI in frame {frame_count}")
+                continue
+
+            # Resize the face region to 48x48 (the model expects this input size)
+            face_roi_resized = cv2.resize(face_roi, (48, 48))  # Resize to 48x48
+            # Ensure the image is in the right shape (height, width, channels)
+            face_roi_resized = face_roi_resized.reshape(1, 48, 48, 1)  # Add channel dimension (1)
+            face_roi_resized = face_roi_resized / 255.0  # Normalize the pixel values to [0, 1]
+
+            # Use TensorFlow to predict the emotion
+            predictions = emotion_model.predict(face_roi_resized)
+            emotion = np.argmax(predictions[0])
+            emotions = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+            emotion_name = emotions[emotion]
+
+            # Use the position as a temporary face ID
+            face_id = f'{x}_{y}_{w}_{h}'
+
+            # Only increment the count if the emotion changes
+            if face_id in current_emotions:
+                if current_emotions[face_id] != emotion_name:
+                    emotion_counts[emotion_name] += 1
+                    current_emotions[face_id] = emotion_name
+            else:
+                current_emotions[face_id] = emotion_name
+                emotion_counts[emotion_name] += 1
+
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+            cv2.putText(frame, emotion_name, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+
+        # Show the frame (you can comment this out if you don’t want to display it)
+        cv2.imshow('Face Detection and Emotion Count', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            print("Quitting...")
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    print("Released video capture and destroyed all windows.")
+
+    return emotion_counts
+
+# Main function to handle the process
+def main():
+    root = tk.Tk()
+    root.withdraw()  # Hides the main tkinter window
+    video_path = filedialog.askopenfilename(title="Select video file", filetypes=[("Video files", "*.mp4"), ("All files", "*.*")])
+
+    if video_path:
+        emotion_counts = detect_emotions(video_path)
+        if emotion_counts:
+            print("Emotion counts detected from video:")
+            for emotion, count in emotion_counts.items():
+                print(f"{emotion}: {count}")
+
+            # Generate chat completion with the detected emotions
+            prompt = f"The detected emotions from the video are:\n" + "\n".join([f"{emotion}: {count}" for emotion, count in emotion_counts.items()])
+            response = generate_chat_completion(prompt)
+            print("\nResponse from ChatGPT API:")
+            print(response)
+        else:
+            print("Failed to detect emotions.")
+    else:
+        print("No video file selected.")
+
+# Run the main function
+if __name__ == "__main__":
+    main()
