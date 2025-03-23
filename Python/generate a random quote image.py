@@ -1,20 +1,14 @@
-import openai
 import os
+from openai import OpenAI
 
-openai.api_key = os.getenv('OPENAI_API_KEY')
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def generate_chat_completion(prompt):
-    response = openai.ChatCompletion.create(
-        model="DALL-E 3",  # Specify the correct model
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=1000  # Adjust token limit as needed
-    )
-    return response['choices'][0]['message']['content'].strip()
+response = client.images.generate(
+    model="dall-e-3",
+    prompt="an inspirational quote about hard work",
+    size="1024x1024",
+    quality="standard",
+    n=1
+)
 
-
-prompt = f"Please generate an image"
-response = generate_chat_completion(prompt)
-print(response)
+print(response.data[0].url)
