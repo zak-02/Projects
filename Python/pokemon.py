@@ -121,7 +121,7 @@ while pika.health!=0 and chari.health!=0:
                                     #opponent can apply to both pokemon inside the class
                                     
     chari.validatingAttacks(pika)# the method can be used repeatedly anywhere outside the class. in this case, it is used twice
-#hw fix the database                                 # so that pika and chari take turns attacking each other
+                                 # so that pika and chari take turns attacking each other
 if pika.health==0:
     print(str(chari.name)+' wins')
 
