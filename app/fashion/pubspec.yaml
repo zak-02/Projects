@@ -21,3 +21,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icons/Arrow - Left 2.svg
+    - assets/icons/black-circle.svg
+    - assets/icons/stick-man.svg
+    - assets/icons/black-square-box.svg
+
+

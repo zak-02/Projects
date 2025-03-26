@@ -12,6 +12,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
     home: MainPage(), // Make sure MainPage is defined and imported correctly
+    debugShowCheckedModeBanner: false
     
     );
   }
