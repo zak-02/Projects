@@ -109,8 +109,8 @@ Reaction Time: {expression_timestamp if expression_timestamp else 'N/A'} seconds
     return response.choices[0].message['content']
 
 # Example of how to call the functions with real data
-audio_file = 'C:/Users/zakam/Desktop/repos/11-59/11-59/emotion detection/debate_audio.wav'  # Your audio file
-video_file = 'C:/Users/zakam/Desktop/repos/11-59/11-59/emotion detection/debate_video.mp4'  # Your video file
+audio_file = 'debate_audio.wav'  # Your audio file
+video_file = 'debate_video.mp4'  # Your video file
 
 # Step 1: Extract statements and timestamps from audio
 statements, timestamps = extract_statements_and_timestamps(audio_file)
