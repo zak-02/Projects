@@ -49,7 +49,7 @@ class Pokemon:
                 print('not allowed super attack')
                 player1=input(str(self.name)+ ', which attack: ')
 
-               #hw fix the scores  (showScores) 
+               
             if player1=='super':
                 self.superAttack(opponent)
                 opponent.showStats()
@@ -71,21 +71,6 @@ class Cheat(Pokemon):# the cheat class is inheriting the pokemon class
         self.attack = 150
         self.powerMove = 200# only self.attack and self.powermove are defined because we WANT to change these from the pokemon class
 
-
-# global
-new_db=sqlite3.connect('Pokemon')
-cursor=new_db.cursor()
-cursor.execute('''CREATE TABLE if not exists Pokemon(
-                Name,
-                Character,
-                High INT)''')
-#hw have a leaderboard highest to lowest
-sql='''SELECT *
-        FROM Pokemon
-        order by High DESC'''
-
-showScore1=cursor.execute(sql).fetchall()
-showScore2=cursor.execute(sql).fetchall()
 
 for i in range (len(showScore1)):
     print(str(showScore1[i])+' ')
@@ -134,8 +119,4 @@ elif chari.health==0:
     print(str(pika.name)+' wins')
     
    
-               
-#cursor.execute('''INSERT INTO Pokemon(Name,Character,High) VALUES (?,?,?)''',(p1,pika.name,pika.score)) 
-#cursor.execute('''INSERT INTO Pokemon(Name,Character,High) VALUES (?,?,?)''',(p2,chari.name,chari.score)) 
-#new_db.commit()
 
