@@ -53,12 +53,12 @@ class Pokemon:
             if player1=='super':
                 self.superAttack(opponent)
                 opponent.showStats()
-                self.score+=self.powerMove*opponent.health
+                self.score += self.powerMove
                 self.showScore()
             elif player1=='normal':
                 self.attacks(opponent)
                 opponent.showStats()
-                self.score+=self.attack*opponent.health
+                self.score += self.powerMove
                 self.showScore()
                 
         else:
@@ -72,8 +72,6 @@ class Cheat(Pokemon):# the cheat class is inheriting the pokemon class
         self.powerMove = 200# only self.attack and self.powermove are defined because we WANT to change these from the pokemon class
 
 
-for i in range (len(showScore1)):
-    print(str(showScore1[i])+' ')
     
 computerNumber=random.randint(1,5)
 p1=input('Enter your name: ')
@@ -115,7 +113,7 @@ if pika.health==0:
      
     
     
-elif chari.health==0:
+else:
     print(str(pika.name)+' wins')
     
    
